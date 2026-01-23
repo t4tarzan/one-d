@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  name          String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  transcriptions Transcription[]
+  settings      UserSettings?
+}
+
+model UserSettings {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  whisperModel      String   @default("base")
+  language          String   @default("en")
+  hotkey            String   @default("Ctrl+Shift+Space")
+  autoLaunch        Boolean  @default(false)
+  theme             String   @default("system")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Transcription {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audioPath     String?
+  text          String   @db.Text
+  language      String?
+  model         String
+  duration      Float?
+  accuracy      Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model VocabularyEntry {
+  id            String   @id @default(cuid())
+  word          String
+  pronunciation String?
+  context       String?
+  frequency     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([word])
+}
+
+model Analytics {
+  id                String   @id @default(cuid())
+  date              DateTime @default(now())
+  totalTranscriptions Int    @default(0)
+  totalDuration     Float    @default(0)
+  avgAccuracy       Float?
+  activeUsers       Int      @default(0)
+  createdAt         DateTime @default(now())
+
+  @@index([date])
+}
