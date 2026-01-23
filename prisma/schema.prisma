@@ -69,3 +69,131 @@ model Analytics {
 
   @@index([date])
 }
+
+model DevelopmentTask {
+  id                String              @id @default(cuid())
+  phase             Int
+  taskNumber        Int
+  title             String
+  description       String              @db.Text
+  status            TaskStatus          @default(PENDING)
+  priority          TaskPriority        @default(MEDIUM)
+  
+  // Code tracking
+  filesCreated      String[]
+  filesModified     String[]
+  linesOfCode       Int                 @default(0)
+  
+  // Verification tracking
+  codeWritten       Boolean             @default(false)
+  codeVerified      Boolean             @default(false)
+  testsWritten      Boolean             @default(false)
+  testsPassed       Boolean             @default(false)
+  buildSuccessful   Boolean             @default(false)
+  
+  // Dependencies
+  dependsOn         String[]
+  blockedBy         String[]
+  
+  // Metadata
+  estimatedHours    Float?
+  actualHours       Float?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  verifiedAt        DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  // Relations
+  verifications     TaskVerification[]
+  notes             TaskNote[]
+  
+  @@unique([phase, taskNumber])
+  @@index([status])
+  @@index([phase])
+}
+
+model TaskVerification {
+  id                String              @id @default(cuid())
+  taskId            String
+  task              DevelopmentTask     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  verificationType  VerificationType
+  description       String              @db.Text
+  status            VerificationStatus  @default(PENDING)
+  
+  // Test details
+  testCommand       String?
+  expectedOutput    String?             @db.Text
+  actualOutput      String?             @db.Text
+  errorMessage      String?             @db.Text
+  
+  // Verification results
+  passed            Boolean             @default(false)
+  verifiedBy        String?
+  verifiedAt        DateTime?
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@index([taskId])
+  @@index([status])
+}
+
+model TaskNote {
+  id                String              @id @default(cuid())
+  taskId            String
+  task              DevelopmentTask     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
+  content           String              @db.Text
+  noteType          NoteType            @default(GENERAL)
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  @@index([taskId])
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  CODE_WRITTEN
+  TESTING
+  VERIFIED
+  COMPLETED
+  BLOCKED
+  SKIPPED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum VerificationType {
+  UNIT_TEST
+  INTEGRATION_TEST
+  BUILD_TEST
+  MANUAL_TEST
+  CODE_REVIEW
+  PERFORMANCE_TEST
+  SECURITY_TEST
+}
+
+enum VerificationStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  SKIPPED
+}
+
+enum NoteType {
+  GENERAL
+  BUG
+  IMPROVEMENT
+  BLOCKER
+  QUESTION
+}
