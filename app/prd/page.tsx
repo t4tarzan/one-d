@@ -1,8 +1,10 @@
 import { FeaturePrioritizationSection, RemainingPRDSections } from './prd-sections';
+import { PasswordGate } from './password-gate';
 
 export default function PRDPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
+    <PasswordGate>
+      <div className="min-h-screen bg-white dark:bg-black">
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <header className="mb-12 border-b border-zinc-200 dark:border-zinc-800 pb-8">
@@ -806,5 +808,6 @@ export default function PRDPage() {
         </div>
       </div>
     </div>
+    </PasswordGate>
   );
 }
