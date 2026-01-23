@@ -33,7 +33,9 @@ export default function RecordPage() {
     try {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.wav');
-      formData.append('model', 'base');
+      formData.append('model', 'whisper-1');
+      // Optional: add userId if you have user authentication
+      // formData.append('userId', currentUser.id);
 
       const response = await fetch('/api/transcribe', {
         method: 'POST',
@@ -41,14 +43,23 @@ export default function RecordPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Transcription failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Transcription failed');
       }
 
       const data = await response.json();
-      setTranscription(data.text || 'No transcription available');
+      
+      if (data.success && data.text) {
+        setTranscription(data.text);
+      } else {
+        setTranscription('No transcription available');
+      }
     } catch (error) {
       console.error('Transcription error:', error);
-      setTranscription('Transcription failed. Please try again.');
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Transcription failed. Please try again.';
+      setTranscription(`Error: ${errorMessage}`);
     } finally {
       setIsTranscribing(false);
     }
