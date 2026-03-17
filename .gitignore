@@ -43,3 +43,7 @@ env.local
 next-env.d.ts
 
 /app/generated/prisma
+
+# business docs — videos and sensitive pitches
+*.mp4
+doc/*-pitch.md
